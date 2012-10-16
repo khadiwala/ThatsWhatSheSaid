@@ -1,16 +1,9 @@
-from os import path
 from random import shuffle
 from nltk.classify.util import apply_features
 from nltk.probability import FreqDist
 import re
+from config import stopwords, filenames, labels
 
-relpath = lambda x : path.join(path.dirname(__file__),x)
-filenames = ["data/fmylife-parsed.txt","data/texts-from-last-night-parsed.txt","data/twss-stories-parsed.txt"]
-filenames = map(relpath, filenames)
-labels = dict([(f,label) for f,label in zip(filenames,['0','0','1'])])  #fn -> label
-stopwords = set(open(relpath("english")).readlines())
-stopwords.add("twss")
-stopwords.add("fml")
 
 def is_not_stopword(w):
     return (w not in stopwords)
