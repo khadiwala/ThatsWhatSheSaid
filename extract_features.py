@@ -1,18 +1,27 @@
+from os import path
 from random import shuffle
 from nltk.classify.util import apply_features
 from nltk.probability import FreqDist
 import re
 
-tags = set(["twss","fml"])
-filenames = ["learning/data/fmylife-parsed.txt","learning/texts-from-last-night-parsed.txt","learning//twss-stories-parsed.txt"]
-stopwords = set(open("learning/english").readlines())
+relpath = lambda x : path.join(path.dirname(__file__),x)
+filenames = ["data/fmylife-parsed.txt","data/texts-from-last-night-parsed.txt","data/twss-stories-parsed.txt"]
+filenames = map(relpath, filenames)
+labels = dict([(f,label) for f,label in zip(filenames,['0','0','1'])])  #fn -> label
+stopwords = set(open(relpath("english")).readlines())
+stopwords.add("twss")
+stopwords.add("fml")
 
 def is_not_stopword(w):
-    return (w not in stopwords) and (w not in tags)
+    return (w not in stopwords)
 
 def get_words(sentence):
     words = re.findall(r'\w+', sentence)
     return filter(is_not_stopword, words)
+
+def get_bigrams(sentence):
+    ws = get_words(sentence)
+    return [one + " " + two for one,two in zip(["START"] + ws, ws + ["END"])]
 
 def words_in_lines(lines):
     for lis in map(get_words,lines):
@@ -28,8 +37,7 @@ def get_get_features(word_features):
         return instance
     return get_features
 
-def get_labeled_examples(fn):
-    labels = dict([(f,label) for f,label in zip(filenames,['0','0','1'])])  #fn -> label
+def get_labeled_examples():
     for f in filenames:
         print f,
         print labels[f]
@@ -39,7 +47,7 @@ def get_labeled_examples(fn):
         for word in words_in_lines(open(f).readlines()): #sacrifice preformance for memory
             words.append(word)
     all_words = FreqDist(w.lower() for w in words)
-    word_features = all_words.keys()[:2000]        # 2000 most frequent words
+    word_features = all_words.keys()[:4000]        # 2000 most frequent words
     get_features = get_get_features(word_features) # create feature extractor
     
     #pair sentences and labels
@@ -49,5 +57,4 @@ def get_labeled_examples(fn):
     shuffle(labeled_examples)
     #extract features
     labeled_instances = apply_features(get_features,labeled_examples,labeled=True) #lazy map
-    #dump(labeled_instances,open(fn,"w+"))
     return (labeled_instances, word_features)
