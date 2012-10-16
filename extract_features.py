@@ -4,24 +4,23 @@ from nltk.probability import FreqDist
 import re
 from config import stopwords, filenames, labels
 
-
-def is_not_stopword(w):
-    return (w not in stopwords)
-
 def get_words(sentence):
+    '''Return words in a sentence'''
     words = re.findall(r'\w+', sentence)
-    return filter(is_not_stopword, words)
+    return [w for w in words if w not in stopwords] 
 
 def get_bigrams(sentence):
     ws = get_words(sentence)
     return [one + " " + two for one,two in zip(["START"] + ws, ws + ["END"])]
 
 def words_in_lines(lines):
+    ''' Return all the words in a list of lines '''
     for lis in map(get_words,lines):
         for word in lis:
             yield word
 
 def get_get_features(word_features):
+    ''' Return a function that extracts features from sentence'''
     def get_features(s):
         words = get_words(s)
         instance = {}
@@ -40,7 +39,7 @@ def get_labeled_examples():
         for word in words_in_lines(open(f).readlines()): #sacrifice preformance for memory
             words.append(word)
     all_words = FreqDist(w.lower() for w in words)
-    word_features = all_words.keys()[:4000]        # 2000 most frequent words
+    word_features = all_words.keys()[:2000]        # 2000 most frequent words
     get_features = get_get_features(word_features) # create feature extractor
     
     #pair sentences and labels
