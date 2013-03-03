@@ -12,6 +12,10 @@ def twss():
     else:
         return render_template("twss.html")
 
+@app.route('/<path:name>')
+def hello(name):
+    return send_from_directory(app.static_folder,name)
+
 def twss_classify(text):
     sentences = text.split('.')
     output = [(s,classify(s)) for s in sentences]
